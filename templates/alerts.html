@@ -1,0 +1,608 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Advanced AI Security Alerts - IoT VULNEX AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1220;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 25px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        .toolbar {
+            background: #17243a;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input, select {
+            padding: 12px;
+            border-radius: 7px;
+            border: 1px solid #334155;
+            background: #0b1220;
+            color: white;
+            min-width: 180px;
+            flex: 1;
+        }
+
+        button, .button {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover, .button:hover {
+            background: #1d4ed8;
+        }
+
+        .export {
+            background: #0891b2;
+        }
+
+        .export:hover {
+            background: #0e7490;
+        }
+
+        .alert-card {
+            background: #17243a;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border-left: 5px solid #ef4444;
+        }
+
+        .medium-border {
+            border-left-color: #f59e0b;
+        }
+
+        .low-border {
+            border-left-color: #22c55e;
+        }
+
+        .high {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .medium {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+
+        .low {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .score {
+            font-size: 28px;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .recommendation {
+            background: #0b1220;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: #17243a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .high-number {
+            color: #ef4444;
+        }
+
+        .medium-number {
+            color: #f59e0b;
+        }
+
+        .low-number {
+            color: #22c55e;
+        }
+
+        .status {
+            color: #22c55e;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+
+        .empty {
+            background: #17243a;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .error {
+            color: #ef4444;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        @media(max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            input, select, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>IoT VULNEX AI</h1>
+
+    <h2>Advanced AI Security Alerts</h2>
+
+    <p>
+        AI-powered IoT threat detection,
+        vulnerability monitoring and security recommendations.
+    </p>
+
+    <!-- STATISTICS -->
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h3>Total Alerts</h3>
+            <div class="stat-number" id="totalAlerts">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>High Risk</h3>
+            <div class="stat-number high-number" id="highAlerts">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Medium Risk</h3>
+            <div class="stat-number medium-number" id="mediumAlerts">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Low Risk</h3>
+            <div class="stat-number low-number" id="lowAlerts">0</div>
+        </div>
+
+    </div>
+
+    <!-- SEARCH AND FILTER -->
+
+    <div class="toolbar">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search Device ID..."
+            aria-label="Search device ID"
+        >
+
+        <select id="severityFilter" aria-label="Filter by severity">
+            <option value="ALL">All Severities</option>
+            <option value="HIGH">High Risk</option>
+            <option value="MEDIUM">Medium Risk</option>
+            <option value="LOW">Low Risk</option>
+        </select>
+
+        <button onclick="loadAlerts()">
+            Refresh Alerts
+        </button>
+
+        <button class="export" onclick="exportCSV()">
+            Export CSV
+        </button>
+
+    </div>
+
+    <p class="status" id="refreshStatus">
+        Connecting to security monitoring system...
+    </p>
+
+    <!-- ALERTS -->
+
+    <div id="alerts">
+        Loading security alerts...
+    </div>
+
+    <a href="/" class="button">Back to Dashboard</a>
+
+    <div class="footer">
+        IoT VULNEX AI | Intelligent IoT Security Platform
+    </div>
+
+</div>
+
+<script>
+
+let allAlerts = [];
+let filteredAlerts = [];
+let isLoading = false;
+
+function escapeHTML(value) {
+
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[char]);
+
+}
+
+
+// UPDATE STATISTICS
+
+function updateStatistics() {
+
+    document.getElementById("totalAlerts").textContent =
+        allAlerts.length;
+
+    document.getElementById("highAlerts").textContent =
+        allAlerts.filter(a => a.severity === "HIGH").length;
+
+    document.getElementById("mediumAlerts").textContent =
+        allAlerts.filter(a => a.severity === "MEDIUM").length;
+
+    document.getElementById("lowAlerts").textContent =
+        allAlerts.filter(a => a.severity === "LOW").length;
+
+}
+
+
+// SEARCH AND FILTER
+
+function filterAlerts() {
+
+    const search = document
+        .getElementById("searchInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const severity = document
+        .getElementById("severityFilter")
+        .value;
+
+    filteredAlerts = allAlerts.filter(alert => {
+
+        const matchesDevice =
+            String(alert.device_code || "")
+                .toLowerCase()
+                .includes(search);
+
+        const matchesSeverity =
+            severity === "ALL" ||
+            alert.severity === severity;
+
+        return matchesDevice && matchesSeverity;
+
+    });
+
+    displayAlerts();
+
+}
+
+
+// DISPLAY ALERTS
+
+function displayAlerts() {
+
+    const container = document.getElementById("alerts");
+
+    if (filteredAlerts.length === 0) {
+
+        container.innerHTML = `
+            <div class="empty">
+                <h3>No matching security alerts found.</h3>
+                <p>Try changing your search or severity filter.</p>
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = filteredAlerts.map(alert => {
+
+        const severity = ["HIGH", "MEDIUM", "LOW"]
+            .includes(alert.severity)
+            ? alert.severity
+            : "LOW";
+
+        const score = Number(alert.score);
+
+        const safeScore = Number.isFinite(score)
+            ? score.toFixed(2)
+            : "0.00";
+
+        const date = alert.created_at
+            ? new Date(alert.created_at).toLocaleString()
+            : "Not available";
+
+        const borderClass = {
+            HIGH: "",
+            MEDIUM: "medium-border",
+            LOW: "low-border"
+        }[severity];
+
+        return `
+
+            <div class="alert-card ${borderClass}">
+
+                <h2>
+                    Security Alert #${escapeHTML(alert.id)}
+                </h2>
+
+                <p>
+                    <strong>Device ID:</strong>
+                    ${escapeHTML(alert.device_code)}
+                </p>
+
+                <p>
+                    <strong>Threat Type:</strong>
+                    ${escapeHTML(alert.type)}
+                </p>
+
+                <p>
+                    <strong>Severity:</strong>
+
+                    <span class="${severity.toLowerCase()}">
+                        ${severity}
+                    </span>
+                </p>
+
+                <p>AI Anomaly Score:</p>
+
+                <div class="score">
+                    ${safeScore} / 100
+                </div>
+
+                <p>
+                    <strong>Description:</strong><br>
+                    ${escapeHTML(alert.description)}
+                </p>
+
+                <div class="recommendation">
+
+                    <h3>Security Recommendation</h3>
+
+                    <p>
+                        ${escapeHTML(alert.recommendation)}
+                    </p>
+
+                </div>
+
+                <p>
+                    <strong>Detection Time:</strong>
+                    ${escapeHTML(date)}
+                </p>
+
+            </div>
+
+        `;
+
+    }).join("");
+
+}
+
+
+// LOAD ALERTS FROM FLASK API
+
+async function loadAlerts() {
+
+    if (isLoading) return;
+
+    isLoading = true;
+
+    try {
+
+        const response = await fetch("/api/alerts", {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error("Unable to load alerts");
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new Error("Invalid alert data");
+        }
+
+        allAlerts = data.map(alert => ({
+            ...alert,
+            severity: String(alert.severity || "LOW").toUpperCase()
+        }));
+
+        updateStatistics();
+
+        filterAlerts();
+
+        document.getElementById("refreshStatus").textContent =
+            "● Live monitoring active | Last updated: " +
+            new Date().toLocaleTimeString();
+
+    } catch (error) {
+
+        document.getElementById("refreshStatus").textContent =
+            "● Unable to connect to security monitoring API.";
+
+        document.getElementById("refreshStatus").className =
+            "status error";
+
+        console.error(error);
+
+    } finally {
+
+        isLoading = false;
+
+    }
+
+}
+
+
+// EXPORT ALERTS TO CSV
+
+function exportCSV() {
+
+    if (filteredAlerts.length === 0) {
+
+        alert("No alerts available to export.");
+
+        return;
+    }
+
+    const headers = [
+        "Alert ID",
+        "Device ID",
+        "Threat Type",
+        "Severity",
+        "Anomaly Score",
+        "Description",
+        "Recommendation",
+        "Detection Time"
+    ];
+
+    function csvValue(value) {
+
+        let text = String(value ?? "");
+
+        // Prevent spreadsheet formula injection.
+        if (/^[\s]*[=+\-@]/.test(text)) {
+            text = "'" + text;
+        }
+
+        return '"' + text.replace(/"/g, '""') + '"';
+
+    }
+
+    const rows = filteredAlerts.map(alert => [
+
+        alert.id,
+        alert.device_code,
+        alert.type,
+        alert.severity,
+        alert.score,
+        alert.description,
+        alert.recommendation,
+        alert.created_at
+
+    ].map(csvValue).join(","));
+
+    const csv = [
+        headers.map(csvValue).join(","),
+        ...rows
+    ].join("\r\n");
+
+    const blob = new Blob(
+        ["\uFEFF" + csv],
+        { type: "text/csv;charset=utf-8;" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+
+    link.download = "IoT_VULNEX_AI_Security_Alerts.csv";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+// EVENT LISTENERS
+
+document
+    .getElementById("searchInput")
+    .addEventListener("input", filterAlerts);
+
+document
+    .getElementById("severityFilter")
+    .addEventListener("change", filterAlerts);
+
+
+// INITIAL LOAD
+
+loadAlerts();
+
+
+// AUTOMATIC REFRESH EVERY 5 SECONDS
+
+setInterval(loadAlerts, 5000);
+
+</script>
+
+</body>
+</html>

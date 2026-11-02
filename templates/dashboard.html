@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoT VULNEX AI Dashboard</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    background: #0b1220;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 30px;
+}
+
+.container {
+    max-width: 1300px;
+    margin: auto;
+}
+
+h1 { color: #38bdf8; }
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.card, .section {
+    background: #17243a;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.number {
+    font-size: 35px;
+    color: #38bdf8;
+    font-weight: bold;
+}
+
+.alert { color: #ef4444; }
+.green { color: #22c55e; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 13px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+}
+
+th { color: #38bdf8; }
+
+.high {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+.button {
+    display: inline-block;
+    background: #2563eb;
+    color: white;
+    padding: 12px 22px;
+    border-radius: 7px;
+    text-decoration: none;
+    margin: 8px 5px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+}
+
+.button:hover { background: #1d4ed8; }
+
+.alert-button { background: #dc2626; }
+.alert-button:hover { background: #b91c1c; }
+
+.health-button { background: #0891b2; }
+.health-button:hover { background: #0e7490; }
+
+.android-button { background: #7c3aed; }
+.android-button:hover { background: #6d28d9; }
+
+.network-button { background: #059669; }
+.network-button:hover { background: #047857; }
+
+.status-text {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.section-title { margin-bottom: 20px; }
+
+.navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px;
+    background: #111827;
+    border: 1px solid #263244;
+    border-radius: 12px;
+    margin: 25px 0;
+}
+
+.navigation .button {
+    margin: 0;
+}
+
+@media(max-width: 600px) {
+    body { padding: 12px; }
+
+    .section { overflow-x: auto; }
+
+    table { min-width: 600px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>IoT VULNEX AI</h1>
+
+<h2>Intelligent IoT Security Platform</h2>
+
+<p>
+AI-Powered IoT Device Vulnerability Assessment
+and Security Testing
+</p>
+
+<h3 class="status-text">● System Status: Online</h3>
+
+<!-- PROJECT NAVIGATION -->
+
+<div class="section">
+
+<h2 class="section-title">Project Navigation</h2>
+
+<div class="navigation">
+
+<a href="/" class="button">Dashboard</a>
+
+<a href="/devices" class="button">IoT Devices</a>
+
+<a href="/alerts" class="button alert-button">Security Alerts</a>
+
+<a href="/analytics" class="button">Analytics</a>
+
+<a href="/vulnerability-scan" class="button">Vulnerability Scanner</a>
+
+<a href="/network-discovery" class="button network-button">Network Discovery</a>
+
+<a href="/android-assessment" class="button android-button">
+Android Security Assessment
+</a>
+
+<a href="/api/health" class="button health-button">System Health</a>
+
+</div>
+
+</div>
+
+<!-- DASHBOARD STATISTICS -->
+
+<div class="cards">
+
+<div class="card">
+<h3>Registered Devices</h3>
+<div class="number" id="devices">{{ devices }}</div>
+</div>
+
+<div class="card">
+<h3>Total Telemetry</h3>
+<div class="number" id="telemetry">{{ telemetry }}</div>
+</div>
+
+<div class="card">
+<h3>Normal Readings</h3>
+<div class="number" id="normal">{{ normal }}</div>
+</div>
+
+<div class="card">
+<h3>Security Alerts</h3>
+<div class="number alert" id="alerts">{{ alerts }}</div>
+</div>
+
+</div>
+
+<!-- RECENT SENSOR READINGS -->
+
+<div class="section">
+
+<h2 class="section-title">Recent Sensor Readings</h2>
+
+<table>
+<thead>
+<tr>
+<th>Device ID</th>
+<th>Temperature</th>
+<th>Humidity</th>
+<th>Network Rate</th>
+<th>Failed Logins</th>
+</tr>
+</thead>
+
+<tbody id="sensor-data">
+<tr><td colspan="5">Loading...</td></tr>
+</tbody>
+</table>
+
+</div>
+
+<!-- AI SECURITY ALERTS -->
+
+<div class="section">
+
+<h2 class="section-title">AI Security Alerts</h2>
+
+<table>
+<thead>
+<tr>
+<th>Device ID</th>
+<th>Severity</th>
+<th>Anomaly Score</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody id="alert-data">
+<tr><td colspan="4">Loading...</td></tr>
+</tbody>
+</table>
+
+<a href="/alerts" class="button alert-button">
+View All AI Security Alerts
+</a>
+
+</div>
+
+<!-- DEVICE MANAGEMENT -->
+
+<div class="section">
+
+<h2>Device Management</h2>
+
+<a href="/devices" class="button">Manage IoT Devices</a>
+
+<a href="/alerts" class="button alert-button">
+View AI Security Alerts
+</a>
+
+<a href="/analytics" class="button">
+AI Security Analytics
+</a>
+
+<a href="/vulnerability-scan" class="button">
+Vulnerability Scanner
+</a>
+
+<a href="/network-discovery" class="button network-button">
+Network Discovery
+</a>
+
+<a href="/android-assessment" class="button android-button">
+Android Security Assessment
+</a>
+
+<a href="/api/health" class="button health-button">
+System Health
+</a>
+
+</div>
+
+<footer style="text-align:center;color:#94a3b8;">
+IoT VULNEX AI | Intelligent IoT Security Platform
+</footer>
+
+</div>
+
+<script>
+
+async function updateDashboard() {
+
+try {
+
+const response = await fetch("/api/dashboard-stats");
+
+if (!response.ok) {
+throw new Error("Dashboard API error");
+}
+
+const data = await response.json();
+
+document.getElementById("devices").textContent = data.devices;
+document.getElementById("telemetry").textContent = data.telemetry;
+document.getElementById("normal").textContent = data.normal;
+document.getElementById("alerts").textContent = data.alerts;
+
+document.getElementById("sensor-data").innerHTML =
+
+data.recent_readings.map(item => `
+<tr>
+<td>${escapeHTML(item.device_code)}</td>
+<td>${item.temperature} °C</td>
+<td>${item.humidity}%</td>
+<td>${item.network_rate}</td>
+<td>${item.failed_logins}</td>
+</tr>
+`).join("") ||
+
+'<tr><td colspan="5">No readings available</td></tr>';
+
+document.getElementById("alert-data").innerHTML =
+
+data.recent_alerts.map(item => `
+<tr>
+<td>${escapeHTML(item.device_code)}</td>
+<td class="${item.severity === 'HIGH' ? 'high' : ''}">
+${escapeHTML(item.severity)}
+</td>
+<td>${Number(item.score).toFixed(2)}</td>
+<td>${escapeHTML(item.description)}</td>
+</tr>
+`).join("") ||
+
+'<tr><td colspan="4">No security alerts</td></tr>';
+
+} catch (error) {
+
+console.error("Dashboard update failed:", error);
+
+}
+
+}
+
+function escapeHTML(value) {
+
+return String(value).replace(/[&<>"']/g, char => ({
+'&': '&amp;',
+'<': '&lt;',
+'>': '&gt;',
+'"': '&quot;',
+"'": '&#39;'
+})[char]);
+
+}
+
+updateDashboard();
+setInterval(updateDashboard, 5000);
+
+</script>
+
+</body>
+</html>

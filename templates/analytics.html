@@ -1,0 +1,576 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Security Analytics - IoT VULNEX AI</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1220;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 25px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        .subtitle {
+            color: #cbd5e1;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .card, .section {
+            background: #17243a;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .red {
+            color: #ef4444;
+        }
+
+        .orange {
+            color: #f59e0b;
+        }
+
+        .green {
+            color: #22c55e;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            color: #38bdf8;
+        }
+
+        .button {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 22px;
+            text-decoration: none;
+            border-radius: 7px;
+            margin: 10px 5px 10px 0;
+        }
+
+        .button:hover {
+            background: #1d4ed8;
+        }
+
+        .status {
+            color: #22c55e;
+        }
+
+        @media(max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .charts {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>IoT VULNEX AI</h1>
+
+    <h2>AI Security Analytics Dashboard</h2>
+
+    <p class="subtitle">
+        Intelligent IoT monitoring, anomaly analysis
+        and device security assessment.
+    </p>
+
+    <h3 class="status">● Analytics System Online</h3>
+
+    <!-- STATISTICS -->
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Total Devices</h3>
+            <div class="number" id="devices">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Total Telemetry</h3>
+            <div class="number" id="telemetry">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Normal Readings</h3>
+            <div class="number green" id="normal">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Security Alerts</h3>
+            <div class="number red" id="alerts">0</div>
+        </div>
+
+    </div>
+
+    <!-- SENSOR CHARTS -->
+
+    <div class="charts">
+
+        <div class="section">
+            <h3>Temperature Monitoring</h3>
+            <div class="chart-container">
+                <canvas id="temperatureChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Humidity Monitoring</h3>
+            <div class="chart-container">
+                <canvas id="humidityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Network Activity</h3>
+            <div class="chart-container">
+                <canvas id="networkChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Failed Login Monitoring</h3>
+            <div class="chart-container">
+                <canvas id="loginChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Security Risk Distribution</h3>
+            <div class="chart-container">
+                <canvas id="riskChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DEVICE ANALYSIS -->
+
+    <div class="section">
+
+        <h2>Recent Device Analytics</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Device ID</th>
+                    <th>Temperature</th>
+                    <th>Humidity</th>
+                    <th>Network Rate</th>
+                    <th>Failed Logins</th>
+                </tr>
+            </thead>
+
+            <tbody id="device-data">
+                <tr>
+                    <td colspan="5">Loading...</td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- SECURITY SUMMARY -->
+
+    <div class="section">
+
+        <h2>AI Security Summary</h2>
+
+        <p id="summary">
+            Loading AI security analysis...
+        </p>
+
+    </div>
+
+    <a href="/" class="button">Back to Dashboard</a>
+
+    <a href="/alerts" class="button">View Security Alerts</a>
+
+    <a href="/devices" class="button">Manage Devices</a>
+
+</div>
+
+<script>
+
+let temperatureChart;
+let humidityChart;
+let networkChart;
+let loginChart;
+let riskChart;
+
+function createChart(id, label, labels, values, color) {
+
+    return new Chart(document.getElementById(id), {
+
+        type: "line",
+
+        data: {
+            labels: labels,
+
+            datasets: [{
+                label: label,
+                data: values,
+                borderColor: color,
+                backgroundColor: color + "22",
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "white"
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    ticks: {
+                        color: "white"
+                    },
+                    grid: {
+                        color: "#334155"
+                    }
+                },
+
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "white"
+                    },
+                    grid: {
+                        color: "#334155"
+                    }
+                }
+            }
+        }
+
+    });
+}
+
+function updateChart(chart, labels, values) {
+
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = values;
+    chart.update();
+}
+
+function escapeHTML(value) {
+
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+
+}
+
+async function updateAnalytics() {
+
+    try {
+
+        const response = await fetch("/api/dashboard-stats");
+
+        if (!response.ok) {
+            throw new Error("Unable to fetch analytics");
+        }
+
+        const data = await response.json();
+
+        // UPDATE STATISTICS
+
+        document.getElementById("devices").textContent =
+            data.devices;
+
+        document.getElementById("telemetry").textContent =
+            data.telemetry;
+
+        document.getElementById("normal").textContent =
+            data.normal;
+
+        document.getElementById("alerts").textContent =
+            data.alerts;
+
+        // CHRONOLOGICAL SENSOR DATA
+
+        const readings = [...(data.recent_readings || [])].reverse();
+
+        const labels = readings.map((item, index) =>
+            "Reading " + (index + 1)
+        );
+
+        const temperatures = readings.map(item =>
+            Number(item.temperature)
+        );
+
+        const humidities = readings.map(item =>
+            Number(item.humidity)
+        );
+
+        const networks = readings.map(item =>
+            Number(item.network_rate)
+        );
+
+        const logins = readings.map(item =>
+            Number(item.failed_logins)
+        );
+
+        // CREATE OR UPDATE CHARTS
+
+        if (!temperatureChart) {
+
+            temperatureChart = createChart(
+                "temperatureChart",
+                "Temperature (°C)",
+                labels,
+                temperatures,
+                "#38bdf8"
+            );
+
+            humidityChart = createChart(
+                "humidityChart",
+                "Humidity (%)",
+                labels,
+                humidities,
+                "#22c55e"
+            );
+
+            networkChart = createChart(
+                "networkChart",
+                "Network Rate",
+                labels,
+                networks,
+                "#f59e0b"
+            );
+
+            loginChart = createChart(
+                "loginChart",
+                "Failed Logins",
+                labels,
+                logins,
+                "#ef4444"
+            );
+
+        } else {
+
+            updateChart(
+                temperatureChart,
+                labels,
+                temperatures
+            );
+
+            updateChart(
+                humidityChart,
+                labels,
+                humidities
+            );
+
+            updateChart(
+                networkChart,
+                labels,
+                networks
+            );
+
+            updateChart(
+                loginChart,
+                labels,
+                logins
+            );
+
+        }
+
+        // SECURITY RISK DISTRIBUTION
+        // Based on the latest alerts returned by the API.
+
+        const recentAlerts = data.recent_alerts || [];
+
+        const high = recentAlerts.filter(
+            item => item.severity === "HIGH"
+        ).length;
+
+        const medium = recentAlerts.filter(
+            item => item.severity === "MEDIUM"
+        ).length;
+
+        const low = recentAlerts.filter(
+            item => item.severity === "LOW"
+        ).length;
+
+        if (!riskChart) {
+
+            riskChart = new Chart(
+                document.getElementById("riskChart"),
+                {
+                    type: "doughnut",
+
+                    data: {
+                        labels: ["High", "Medium", "Low"],
+
+                        datasets: [{
+                            data: [high, medium, low],
+                            backgroundColor: [
+                                "#ef4444",
+                                "#f59e0b",
+                                "#22c55e"
+                            ]
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                position: "bottom",
+                                labels: {
+                                    color: "white"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+        } else {
+
+            riskChart.data.datasets[0].data = [
+                high, medium, low
+            ];
+
+            riskChart.update();
+
+        }
+
+        // DEVICE TABLE
+
+        document.getElementById("device-data").innerHTML =
+            readings.map(item => `
+
+                <tr>
+                    <td>${escapeHTML(item.device_code)}</td>
+                    <td>${Number(item.temperature).toFixed(1)} °C</td>
+                    <td>${Number(item.humidity).toFixed(1)}%</td>
+                    <td>${Number(item.network_rate).toFixed(1)}</td>
+                    <td>${Number(item.failed_logins)}</td>
+                </tr>
+
+            `).join("") ||
+            '<tr><td colspan="5">No sensor readings available</td></tr>';
+
+        // AUTOMATED SECURITY SUMMARY
+
+        let message = "";
+
+        if (data.alerts > 0) {
+
+            message =
+                "Security monitoring detected " +
+                data.alerts +
+                " recorded security alerts. Review the AI Security Alerts page and investigate suspicious device activity.";
+
+        } else {
+
+            message =
+                "No security alerts are currently recorded. Continue monitoring IoT telemetry for unusual activity.";
+
+        }
+
+        document.getElementById("summary").textContent = message;
+
+    } catch (error) {
+
+        console.error("Analytics error:", error);
+
+        document.getElementById("summary").textContent =
+            "Unable to load analytics. Check the Flask server and dashboard API.";
+
+    }
+
+}
+
+updateAnalytics();
+
+setInterval(updateAnalytics, 10000);
+
+</script>
+
+</body>
+</html>

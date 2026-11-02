@@ -1,0 +1,609 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Android Security Assessment | IoT VULNEX AI</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b1120;
+    color: #e5e7eb;
+}
+
+header {
+    background: #111827;
+    padding: 22px 35px;
+    border-bottom: 1px solid #263244;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+header h1 { margin: 0; color: #38bdf8; font-size: 25px; }
+header p { color: #94a3b8; margin-bottom: 0; }
+
+.container {
+    max-width: 1300px;
+    margin: auto;
+    padding: 30px;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+button {
+    background: #0284c7;
+    border: none;
+    padding: 13px 22px;
+    color: white;
+    font-weight: bold;
+    border-radius: 7px;
+    cursor: pointer;
+    margin: 4px;
+}
+
+button:hover { background: #0369a1; }
+button:disabled { opacity: 0.6; cursor: wait; }
+
+.back-button {
+    display: inline-block;
+    background: #374151;
+    color: white;
+    padding: 13px 18px;
+    border-radius: 7px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    margin: 4px;
+}
+
+.back-button:hover {
+    background: #4b5563;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 18px;
+}
+
+.card {
+    background: #111827;
+    border: 1px solid #263244;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 20px;
+}
+
+.card h3 { color: #94a3b8; font-size: 14px; margin-top: 0; }
+
+.value {
+    font-size: 22px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.section-title { margin: 30px 0 15px; color: #38bdf8; }
+#status { color: #94a3b8; margin: 15px 0; }
+
+.finding {
+    background: #111827;
+    border: 1px solid #263244;
+    border-left: 5px solid #64748b;
+    padding: 18px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.severity-INFO { border-left-color: #38bdf8; }
+.severity-MEDIUM { border-left-color: #f59e0b; }
+.severity-HIGH { border-left-color: #ef4444; }
+.severity-CRITICAL { border-left-color: #dc2626; }
+
+.severity { font-weight: bold; font-size: 12px; }
+.info { color: #38bdf8; }
+.medium { color: #f59e0b; }
+.high { color: #ef4444; }
+.critical { color: #dc2626; }
+
+.table-container {
+    overflow-x: auto;
+    background: #111827;
+    border: 1px solid #263244;
+    border-radius: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+th, td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #263244;
+}
+
+th { color: #38bdf8; background: #172033; }
+td { color: #cbd5e1; }
+tr:hover { background: #172033; }
+
+.badge {
+    padding: 5px 9px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.badge-success { background: #064e3b; color: #6ee7b7; }
+.badge-error { background: #7f1d1d; color: #fecaca; }
+
+.empty { text-align: center; padding: 25px; color: #94a3b8; }
+
+footer { text-align: center; color: #64748b; padding: 25px; }
+
+.cve-card {
+    background: #111827;
+    border: 1px solid #263244;
+    border-left: 5px solid #64748b;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.cve-card h3 { color: #38bdf8; margin-top: 0; }
+.cve-card p { line-height: 1.6; overflow-wrap: anywhere; }
+
+.cve-high { border-left-color: #ef4444; }
+.cve-critical { border-left-color: #dc2626; }
+.cve-medium { border-left-color: #f59e0b; }
+.cve-low { border-left-color: #38bdf8; }
+.cve-unknown { border-left-color: #64748b; }
+
+.cve-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.cve-tag {
+    background: #172033;
+    border: 1px solid #263244;
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.cve-link {
+    color: #38bdf8;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.cve-link:hover { text-decoration: underline; }
+
+.intelligence-note {
+    background: #172033;
+    border: 1px solid #263244;
+    padding: 15px;
+    border-radius: 8px;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+.intelligence-status {
+    color: #94a3b8;
+    margin-bottom: 15px;
+}
+
+@media(max-width: 600px) {
+    header { padding: 20px; }
+    .container { padding: 15px; }
+    .toolbar { align-items: flex-start; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>IoT VULNEX AI</h1>
+        <p>Android Security Assessment Platform</p>
+    </div>
+
+    <a href="/" class="back-button">← Back to Dashboard</a>
+</header>
+
+<div class="container">
+
+    <div class="toolbar">
+        <div>
+            <h2>Android Security Assessment</h2>
+            <p>USB-connected Android device analysis</p>
+        </div>
+
+        <button id="scanBtn" onclick="runAssessment()">
+            Run Android Assessment
+        </button>
+    </div>
+
+    <div id="status">Ready to scan.</div>
+
+    <h3 class="section-title">Device Information</h3>
+
+    <div class="grid">
+        <div class="card"><h3>Manufacturer</h3><div class="value" id="manufacturer">--</div></div>
+        <div class="card"><h3>Model</h3><div class="value" id="model">--</div></div>
+        <div class="card"><h3>Android Version</h3><div class="value" id="android">--</div></div>
+        <div class="card"><h3>Security Patch</h3><div class="value" id="patch">--</div></div>
+        <div class="card"><h3>Kernel Version</h3><div class="value" id="kernel">--</div></div>
+        <div class="card"><h3>SDK Version</h3><div class="value" id="sdk">--</div></div>
+        <div class="card"><h3>Google Play System Update</h3><div class="value" id="playUpdate">--</div></div>
+        <div class="card"><h3>ADB Device ID</h3><div class="value" id="adbId">--</div></div>
+    </div>
+
+    <h3 class="section-title">Assessment Summary</h3>
+
+    <div class="grid">
+        <div class="card"><h3>Total Findings</h3><div class="value" id="totalFindings">0</div></div>
+        <div class="card"><h3>Assessment Status</h3><div class="value" id="assessmentStatus">--</div></div>
+        <div class="card"><h3>Scan ID</h3><div class="value" id="scanId">--</div></div>
+    </div>
+
+    <h3 class="section-title">Security Findings</h3>
+    <div id="findings"><div class="card">Run an assessment to view findings.</div></div>
+
+    <h3 class="section-title">Android CVE Intelligence</h3>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Bulletin CVEs</h3>
+            <div class="value" id="bulletinTotal">--</div>
+        </div>
+
+        <div class="card">
+            <h3>NVD CVEs Retrieved</h3>
+            <div class="value" id="nvdTotal">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Confirmed Device Vulnerabilities</h3>
+            <div class="value" id="confirmedCves">0</div>
+        </div>
+    </div>
+
+    <div id="cveStatus" class="intelligence-status">
+        Run an assessment to retrieve Android CVE intelligence.
+    </div>
+
+    <div class="intelligence-note">
+        <strong>Important:</strong> Android bulletin CVEs represent general
+        Android security intelligence. Their presence does not prove that
+        this specific device is vulnerable. Device-specific confirmation
+        requires component, chipset, OEM and patch applicability analysis.
+    </div>
+
+    <div id="cveSource"></div>
+    <div id="cveResults">
+        <div class="card">CVE intelligence will appear here after assessment.</div>
+    </div>
+
+    <h3 class="section-title">Android Assessment History</h3>
+
+    <div class="toolbar">
+        <p>Previously saved Android security assessments</p>
+        <button id="historyBtn" onclick="loadHistory()">Refresh History</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date / Time</th>
+                    <th>Model</th>
+                    <th>Android</th>
+                    <th>Security Patch</th>
+                    <th>Status</th>
+                    <th>Findings</th>
+                    <th>Scan ID</th>
+                </tr>
+            </thead>
+            <tbody id="historyTable">
+                <tr><td colspan="7" class="empty">Loading scan history...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<footer>
+    IoT VULNEX AI | Android Security Assessment
+</footer>
+
+<script>
+
+async function runAssessment() {
+    const button = document.getElementById("scanBtn");
+    const status = document.getElementById("status");
+
+    button.disabled = true;
+    button.textContent = "Scanning...";
+    status.textContent = "Connecting to Android device...";
+
+    try {
+        const response = await fetch("/api/android-assessment");
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "SUCCESS") {
+            throw new Error(data.message || "Assessment failed.");
+        }
+
+        const device = data.device || {};
+
+        document.getElementById("manufacturer").textContent = device.manufacturer || "Unknown";
+        document.getElementById("model").textContent = device.model || "Unknown";
+        document.getElementById("android").textContent = device.android_version || "Unknown";
+        document.getElementById("patch").textContent = device.security_patch || "Unknown";
+        document.getElementById("kernel").textContent = device.kernel_version || "Unknown";
+        document.getElementById("sdk").textContent = device.sdk_version || "Unknown";
+        document.getElementById("playUpdate").textContent = device.google_play_system_update || "Unknown";
+        document.getElementById("adbId").textContent = device.adb_id || "Unknown";
+
+        document.getElementById("totalFindings").textContent = data.total_findings ?? 0;
+        document.getElementById("assessmentStatus").textContent = data.status || "Unknown";
+        document.getElementById("scanId").textContent = data.scan_id || "Unknown";
+
+        renderFindings(data.findings || []);
+        renderCveIntelligence(data.bulletin_intelligence || {});
+        status.textContent = data.message || "Assessment completed successfully.";
+
+        await loadHistory();
+
+    } catch (error) {
+        status.textContent = "Error: " + error.message;
+    } finally {
+        button.disabled = false;
+        button.textContent = "Run Android Assessment";
+    }
+}
+
+function renderFindings(findings) {
+    const container = document.getElementById("findings");
+    container.replaceChildren();
+
+    if (!findings.length) {
+        const empty = document.createElement("div");
+        empty.className = "card";
+        empty.textContent = "No findings returned by the assessment.";
+        container.appendChild(empty);
+        return;
+    }
+
+    findings.forEach(finding => {
+        const card = document.createElement("div");
+        card.className = "finding severity-" + String(finding.severity || "INFO").toUpperCase();
+
+        const title = document.createElement("h3");
+        title.textContent = finding.title || "Security Finding";
+
+        const severity = document.createElement("div");
+        severity.className = "severity " + String(finding.severity || "INFO").toLowerCase();
+        severity.textContent = "Severity: " + (finding.severity || "INFO");
+
+        const description = document.createElement("p");
+        description.textContent = finding.description || "No description available.";
+
+        const recommendation = document.createElement("p");
+        recommendation.textContent = "Recommendation: " + (finding.recommendation || "Review this finding.");
+
+        const method = document.createElement("small");
+        method.textContent = "Detection: " + (finding.detection_method || "Unknown");
+
+        card.append(title, severity, description, recommendation, method);
+        container.appendChild(card);
+    });
+}
+
+function renderCveIntelligence(intel) {
+    const cveContainer = document.getElementById("cveResults");
+    const status = document.getElementById("cveStatus");
+    const sourceContainer = document.getElementById("cveSource");
+
+    cveContainer.replaceChildren();
+    sourceContainer.replaceChildren();
+
+    const cves = intel.cves || intel.details || [];
+
+    document.getElementById("bulletinTotal").textContent =
+        intel.total_cves ?? 0;
+
+    document.getElementById("nvdTotal").textContent =
+        cves.length;
+
+    document.getElementById("confirmedCves").textContent =
+        intel.confirmed_device_vulnerabilities ?? 0;
+
+    status.textContent =
+        "Intelligence status: " + (intel.status || "UNKNOWN") +
+        " | " + (intel.message || "");
+
+    if (intel.source) {
+        const source = document.createElement("p");
+        const link = document.createElement("a");
+
+        link.href = intel.source;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.className = "cve-link";
+        link.textContent = "Open Android Security Bulletin";
+
+        source.appendChild(link);
+        sourceContainer.appendChild(source);
+    }
+
+    if (!cves.length) {
+        const empty = document.createElement("div");
+        empty.className = "card";
+        empty.textContent =
+            "No NVD CVE details were returned. Check internet connectivity or NVD API availability.";
+        cveContainer.appendChild(empty);
+        return;
+    }
+
+    cves.forEach(cve => {
+        const card = document.createElement("div");
+
+        const severity = String(
+            cve.severity || cve.cvss_severity || "UNKNOWN"
+        ).toUpperCase();
+
+        card.className =
+            "cve-card cve-" + severity.toLowerCase();
+
+        const title = document.createElement("h3");
+        title.textContent = cve.cve_id || cve.id || "Unknown CVE";
+
+        const meta = document.createElement("div");
+        meta.className = "cve-meta";
+
+        const severityTag = document.createElement("span");
+        severityTag.className = "cve-tag";
+        severityTag.textContent = "Severity: " + severity;
+
+        const scoreTag = document.createElement("span");
+        scoreTag.className = "cve-tag";
+        scoreTag.textContent =
+            "CVSS: " + (cve.cvss_score ?? cve.score ?? "N/A");
+
+        meta.append(severityTag, scoreTag);
+
+        const description = document.createElement("p");
+        description.textContent =
+            cve.description || "Description unavailable.";
+
+        const published = document.createElement("p");
+        published.textContent =
+            "Published: " + (cve.published || "Unknown");
+
+        const link = document.createElement("a");
+        link.className = "cve-link";
+        link.href = cve.url ||
+            ("https://nvd.nist.gov/vuln/detail/" +
+             encodeURIComponent(cve.cve_id || cve.id || ""));
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "View CVE in NVD";
+
+        card.append(title, meta, description, published, link);
+        cveContainer.appendChild(card);
+    });
+}
+
+async function loadHistory() {
+    const button = document.getElementById("historyBtn");
+    const table = document.getElementById("historyTable");
+
+    button.disabled = true;
+    button.textContent = "Loading...";
+
+    try {
+        const response = await fetch("/api/android-scan-history");
+        const history = await response.json();
+
+        if (!response.ok || !Array.isArray(history)) {
+            throw new Error("Unable to retrieve scan history.");
+        }
+
+        table.replaceChildren();
+
+        if (history.length === 0) {
+            const row = table.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 7;
+            cell.className = "empty";
+            cell.textContent = "No Android assessments saved yet.";
+            return;
+        }
+
+        
+history.forEach(scan => {
+    const row = table.insertRow();
+
+    const values = [
+        scan.created_at
+            ? new Date(scan.created_at + "Z").toLocaleString(
+                "en-IN",
+                {
+                    timeZone: "Asia/Kolkata",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true
+                }
+            )
+            : "Unknown",
+
+                scan.model || "Unknown",
+                scan.android_version || "Unknown",
+                scan.security_patch || "Unknown",
+                scan.status || "Unknown",
+                scan.total_findings ?? 0,
+                scan.scan_id || "Unknown"
+            ];
+
+            values.forEach((value, index) => {
+                const cell = row.insertCell();
+                cell.textContent = value;
+
+                if (index === 4) {
+                    const badge = document.createElement("span");
+                    badge.className = scan.status === "SUCCESS"
+                        ? "badge badge-success"
+                        : "badge badge-error";
+                    badge.textContent = value;
+                    cell.textContent = "";
+                    cell.appendChild(badge);
+                }
+            });
+        });
+
+    } catch (error) {
+        table.replaceChildren();
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 7;
+        cell.className = "empty";
+        cell.textContent = "History error: " + error.message;
+    } finally {
+        button.disabled = false;
+        button.textContent = "Refresh History";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", loadHistory);
+
+</script>
+
+</body>
+</html>

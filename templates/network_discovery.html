@@ -1,0 +1,503 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>IoT VULNEX AI - Network Discovery</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 25px;
+    background: #0b1220;
+    color: #e5e7eb;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 1250px;
+    margin: auto;
+}
+
+h1 {
+    color: #38bdf8;
+}
+
+.panel {
+    background: #18263d;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+input, button {
+    padding: 11px;
+    border-radius: 6px;
+    border: none;
+    margin: 5px;
+}
+
+input {
+    background: #0b1220;
+    color: white;
+    border: 1px solid #334155;
+}
+
+button {
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.scan-btn {
+    background: #0891b2;
+}
+
+.scan-btn:hover {
+    background: #0e7490;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+}
+
+th {
+    color: #38bdf8;
+}
+
+.status {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+#message {
+    margin-top: 15px;
+    color: #facc15;
+}
+
+.result-panel {
+    background: #101a2c;
+    padding: 18px;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.finding {
+    background: #18263d;
+    padding: 14px;
+    margin: 10px 0;
+    border-left: 4px solid #f59e0b;
+    border-radius: 5px;
+}
+
+.high {
+    border-left-color: #ef4444;
+}
+
+.medium {
+    border-left-color: #f59e0b;
+}
+
+.info {
+    border-left-color: #38bdf8;
+}
+
+.error {
+    color: #f87171;
+}
+
+.success {
+    color: #22c55e;
+}
+
+.small {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+@media(max-width: 800px) {
+    body {
+        padding: 10px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>IoT VULNEX AI</h1>
+<h2>Automatic Network Discovery & Security Assessment</h2>
+
+<div class="panel">
+
+    <p>Discover active devices on your authorized local network.</p>
+
+    <input
+        type="text"
+        id="network"
+        value="192.168.31.0/24"
+        placeholder="Network CIDR"
+    >
+
+    <button onclick="discoverDevices()">Discover Devices</button>
+
+    <div id="message"></div>
+
+</div>
+
+<div class="panel">
+
+    <h3>Discovered Devices</h3>
+
+    <p id="deviceCount">Devices: 0</p>
+
+    <table>
+
+        <thead>
+        <tr>
+            <th>IP Address</th>
+            <th>Hostname</th>
+            <th>MAC Address</th>
+            <th>Vendor</th>
+            <th>Status</th>
+            <th>Assessment</th>
+        </tr>
+        </thead>
+
+        <tbody id="deviceTable">
+        <tr>
+            <td colspan="6">Click Discover Devices.</td>
+        </tr>
+        </tbody>
+
+    </table>
+
+</div>
+
+<div id="scanResults"></div>
+
+<p class="small">
+Network discovery identifies reachable devices.
+Nmap service assessment identifies open TCP ports and services.
+Findings indicate potential service exposure, not confirmed vulnerabilities.
+</p>
+
+<button onclick="location.href='/'">Back to Dashboard</button>
+
+</div>
+
+<script>
+
+async function discoverDevices() {
+
+    const network = document.getElementById("network").value.trim();
+    const message = document.getElementById("message");
+    const table = document.getElementById("deviceTable");
+    const count = document.getElementById("deviceCount");
+
+    message.textContent = "Discovering devices...";
+    table.innerHTML = "";
+    document.getElementById("scanResults").innerHTML = "";
+
+    try {
+
+        const response = await fetch(
+            "/api/discover-devices?network=" +
+            encodeURIComponent(network)
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || result.status !== "SUCCESS") {
+            message.textContent = result.message || "Discovery failed.";
+            return;
+        }
+
+        const devices = result.devices || [];
+
+        count.textContent = "Devices: " + devices.length;
+        message.textContent = result.message;
+
+        if (devices.length === 0) {
+            table.innerHTML =
+                "<tr><td colspan='6'>No devices found.</td></tr>";
+            return;
+        }
+
+        devices.forEach(device => {
+
+            const row = document.createElement("tr");
+
+            [
+                device.ip_address,
+                device.hostname,
+                device.mac_address,
+                device.vendor,
+                device.status
+            ].forEach(value => {
+
+                const cell = document.createElement("td");
+                cell.textContent = value || "Unknown";
+
+                if (value === "UP") {
+                    cell.className = "status";
+                }
+
+                row.appendChild(cell);
+
+            });
+
+            const actionCell = document.createElement("td");
+
+            const button = document.createElement("button");
+            button.textContent = "Scan Services";
+            button.className = "scan-btn";
+
+            button.onclick = () => scanDevice(device.ip_address);
+
+            actionCell.appendChild(button);
+            row.appendChild(actionCell);
+
+            table.appendChild(row);
+
+        });
+
+    } catch (error) {
+
+        message.textContent = "Discovery error: " + error.message;
+
+    }
+
+}
+
+async function scanDevice(ipAddress) {
+
+    const results = document.getElementById("scanResults");
+
+    results.innerHTML = `
+        <div class="panel">
+            <h3>Scanning ${escapeHTML(ipAddress)}</h3>
+            <p>Please wait while Nmap identifies services...</p>
+        </div>
+    `;
+
+    try {
+
+        const response = await fetch("/api/scan-discovered-device", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                ip_address: ipAddress
+            })
+
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || result.status !== "SUCCESS") {
+
+            results.innerHTML = `
+                <div class="panel error">
+                    <h3>Scan Failed</h3>
+                    <p>${escapeHTML(result.message || "Unknown error")}</p>
+                </div>
+            `;
+
+            return;
+
+        }
+
+        displayScanResults(ipAddress, result);
+
+    } catch (error) {
+
+        results.innerHTML = `
+            <div class="panel error">
+                <p>${escapeHTML(error.message)}</p>
+            </div>
+        `;
+
+    }
+
+}
+
+function displayScanResults(ipAddress, result) {
+
+    const scan = result.scan_result || {};
+    const analysis = result.analysis || {};
+    const ports = (scan.ports || []).filter(p => p.state === "open");
+    const findings = analysis.findings || [];
+
+    const results = document.getElementById("scanResults");
+
+    const panel = document.createElement("div");
+    panel.className = "panel";
+
+    const heading = document.createElement("h2");
+    heading.textContent = "Service Assessment: " + ipAddress;
+    panel.appendChild(heading);
+
+    const summary = document.createElement("p");
+    summary.textContent =
+        "Host Status: " + (scan.host_status || "Unknown") +
+        " | Open TCP Ports: " + ports.length +
+        " | Findings: " + findings.length;
+
+    panel.appendChild(summary);
+
+    const portTitle = document.createElement("h3");
+    portTitle.textContent = "Open TCP Services";
+    panel.appendChild(portTitle);
+
+    const table = document.createElement("table");
+
+    const header = document.createElement("tr");
+
+    ["Port", "Protocol", "Service", "Product", "Version"].forEach(value => {
+        const th = document.createElement("th");
+        th.textContent = value;
+        header.appendChild(th);
+    });
+
+    table.appendChild(header);
+
+    if (ports.length === 0) {
+
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        cell.colSpan = 5;
+        cell.textContent = "No open TCP ports detected.";
+
+        row.appendChild(cell);
+        table.appendChild(row);
+
+    }
+
+    ports.forEach(port => {
+
+        const row = document.createElement("tr");
+
+        [
+            port.port,
+            port.protocol,
+            port.service,
+            port.product,
+            port.version
+        ].forEach(value => {
+
+            const cell = document.createElement("td");
+            cell.textContent = value || "Unknown";
+            row.appendChild(cell);
+
+        });
+
+        table.appendChild(row);
+
+    });
+
+    panel.appendChild(table);
+
+    const findingTitle = document.createElement("h3");
+    findingTitle.textContent = "Security Findings";
+    panel.appendChild(findingTitle);
+
+    if (findings.length === 0) {
+
+        const text = document.createElement("p");
+        text.textContent = "No service exposure findings generated.";
+        panel.appendChild(text);
+
+    }
+
+    findings.forEach(finding => {
+
+        const card = document.createElement("div");
+
+        const severity = String(finding.severity || "INFO").toLowerCase();
+
+        card.className = "finding " + severity;
+
+        const title = document.createElement("h4");
+        title.textContent =
+            finding.title + " - " + finding.severity;
+
+        card.appendChild(title);
+
+        const description = document.createElement("p");
+        description.textContent = finding.description;
+        card.appendChild(description);
+
+        const recommendation = document.createElement("p");
+        recommendation.textContent =
+            "Recommendation: " + finding.recommendation;
+
+        card.appendChild(recommendation);
+
+        const port = document.createElement("p");
+        port.textContent = "Port: " + finding.port;
+
+        card.appendChild(port);
+
+        panel.appendChild(card);
+
+    });
+
+    const note = document.createElement("p");
+    note.className = "small";
+    note.textContent =
+        "Assessment is limited to the 100 most common TCP ports. " +
+        "Service exposure findings are preliminary and do not confirm CVEs.";
+
+    panel.appendChild(note);
+
+    results.replaceChildren(panel);
+
+}
+
+function escapeHTML(value) {
+
+    return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+
+}
+
+</script>
+
+</body>
+</html>
